@@ -58,7 +58,7 @@ public class CsvParser {
             var year = Integer.parseInt(dateParts[2]);
 
             var currentYear = Year.now().getValue();
-            var century = (year >= currentYear % 100) ? currentYear / 100 * 100 : (currentYear / 100 - 1) * 100;
+            var century = (year <= currentYear % 100) ? currentYear / 100 * 100 : (currentYear / 100 - 1) * 100;
             year += century;
 
             var localDate = LocalDate.of(year, month, day);
