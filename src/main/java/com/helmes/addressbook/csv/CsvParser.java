@@ -32,7 +32,7 @@ public class CsvParser {
     //Everything to the right of the first name is considered a surname for simplicity.
     private static Pair<String, String> parseFirstAndLastName(final String fullName) {
         var spaceIndex = fullName.indexOf(" ");
-        if (spaceIndex != -1) {
+        if (spaceIndex == -1) {
             return new Pair<>(fullName, null);
         }
         var firstName = fullName.substring(0, spaceIndex);
