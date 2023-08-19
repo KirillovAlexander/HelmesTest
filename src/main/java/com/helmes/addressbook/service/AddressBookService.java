@@ -2,7 +2,6 @@ package com.helmes.addressbook.service;
 
 import com.helmes.addressbook.csv.CsvParser;
 import com.helmes.addressbook.domain.Person;
-import com.helmes.addressbook.domain.Sex;
 import com.helmes.addressbook.exception.CsvException;
 
 import java.io.BufferedReader;
@@ -10,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class AddressBookService {
@@ -17,49 +17,66 @@ public class AddressBookService {
     private static final String BILL_NAME = "BILL";
     private static final String PAUL_NAME = "PAUL";
 
-    public void processAddressBook(final String path) {
-        var errorList = new ArrayList<String>();
-        var maleCount = 0;
-        Person oldestPerson = null;
-        Person bill = null;
-        Person paul = null;
-        var daysOlder = 0L;
+    private final List<String> errorList = new ArrayList<>();
+    private int maleCounter;
+    private Person oldestPerson;
+    private Person bill;
+    private Person paul;
+    private long daysOlder;
+
+    public void processAddressBook(final String path) throws IOException {
         try (var inputStream = AddressBookService.class.getClassLoader().getResourceAsStream(path);
              var reader = new BufferedReader(new InputStreamReader(inputStream))) {
-            int lineNumber = 0;
+            var lineNumber = 0;
             String line;
-            while ((line = reader.readLine()) != null) {
+            while (Objects.nonNull(line = reader.readLine())) {
                 var person = CsvParser.parseLine(line, lineNumber++);
-                if (person.sex().equals(Sex.MALE)) {
-                    maleCount++;
-                }
-                if (Objects.isNull(oldestPerson) || person.birthDate().isBefore(oldestPerson.birthDate())) {
-                    oldestPerson = person;
-                }
-                if (person.firstName().equalsIgnoreCase(BILL_NAME)) {
-                    bill = person;
-                }
-                if (person.firstName().equalsIgnoreCase(PAUL_NAME)) {
-                    paul = person;
-                }
+                countMalePersons(person);
+                findOldestPerson(person);
+                findBillAndPaul(person);
             }
-            if (Objects.nonNull(bill) && Objects.nonNull(paul)) {
-                daysOlder = daysOlder(bill, paul);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+            calculateBillPaulAgeDifference();
         } catch (CsvException e) {
             errorList.add(e.getMessage());
         }
-        System.out.println(getResultMessage(maleCount, oldestPerson, daysOlder));
+        System.out.println(getResultMessage());
         errorList.forEach(System.out::println);
     }
 
-    private String getResultMessage(final int numberOfMales, final Person oldestPerson, final long daysOlder) {
-        return String.format("Result:%nNumber of males: %s%nOldest person: %s%nBill is older than Paul on %s days",
-                             numberOfMales,
-                             oldestPerson,
-                             daysOlder);
+    private void countMalePersons(final Person person) {
+        if (person.isMale()) {
+            maleCounter++;
+        }
+    }
+
+    private void findOldestPerson(final Person person) {
+        if (Objects.isNull(oldestPerson) || person.birthDate().isBefore(oldestPerson.birthDate())) {
+            oldestPerson = person;
+        }
+    }
+
+    private void findBillAndPaul(final Person person) {
+        if (person.firstName().equalsIgnoreCase(BILL_NAME)) {
+            bill = person;
+        }
+        if (person.firstName().equalsIgnoreCase(PAUL_NAME)) {
+            paul = person;
+        }
+    }
+
+    private void calculateBillPaulAgeDifference() {
+        if (Objects.nonNull(bill) && Objects.nonNull(paul)) {
+            daysOlder = daysOlder(bill, paul);
+        }
+    }
+
+    private String getResultMessage() {
+        return """
+                Result:
+                Number of males: %s
+                Oldest person: %s
+                Bill is older than Paul on %s days
+                """.formatted(maleCounter, oldestPerson, daysOlder);
     }
 
     private long daysOlder(final Person bill, final Person paul) {
