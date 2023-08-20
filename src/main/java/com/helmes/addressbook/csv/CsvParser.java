@@ -21,7 +21,7 @@ public class CsvParser {
     public static Person parseLine(final String line, final int lineNumber) throws CsvException {
         var fields = line.split(DIVIDER);
         if (fields.length != 3) {
-            throw new CsvException("Can't parse line number " + lineNumber + ". Please check the source file.");
+            throw new CsvException("Can't parse line", lineNumber);
         }
         var fullName = parseFirstAndLastName(fields[0].trim());
         var sex = parseSex(fields[1].trim(), lineNumber);
@@ -43,17 +43,13 @@ public class CsvParser {
         try {
             return Sex.valueOf(sexAsString.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new CsvException("Can't parse sex value for line number: "
-                                   + lineNumber
-                                   + ". Please check the source file.");
+            throw new CsvException("Can't parse sex value", lineNumber);
         }
     }
 
     private static Instant parseBirthDate(final String dateAsString, final int lineNumber) throws CsvException {
         if (!dateAsString.matches(DATE_REGEX)) {
-            throw new CsvException("Can't parse birth date for the line number "
-                                   + lineNumber
-                                   + ". Please check the source file.");
+            throw new CsvException("Can't parse birth date", lineNumber);
         }
         var dateParts = dateAsString.split("/");
         var day = Integer.parseInt(dateParts[0]);
@@ -67,9 +63,7 @@ public class CsvParser {
         try {
             localDate = LocalDate.of(year, month, day);
         } catch (DateTimeException e) {
-            throw new CsvException("Can't parse birth date for the line number "
-                                   + lineNumber
-                                   + ". Please check the source file.");
+            throw new CsvException("Can't parse birth date", lineNumber);
         }
         return localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
     }
