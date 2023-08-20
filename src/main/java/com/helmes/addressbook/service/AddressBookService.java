@@ -22,7 +22,10 @@ public class AddressBookService {
     private Person oldestPerson;
     private Person bill;
     private Person paul;
-    private long daysOlder;
+
+    //A boxed type to output `null` instead of `0` in case Bill or Paul is not found in the address book.
+    // (0 can be interpreted as being born on the same day)
+    private Long daysOlder;
 
     public void processAddressBook(final String path) throws IOException {
         try (var inputStream = AddressBookService.class.getClassLoader().getResourceAsStream(path);
