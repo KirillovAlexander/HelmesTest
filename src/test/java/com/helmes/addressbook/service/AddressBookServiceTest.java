@@ -1,3 +1,5 @@
+package com.helmes.addressbook.service;
+
 import com.helmes.addressbook.service.AddressBookService;
 import org.junit.jupiter.api.Test;
 
