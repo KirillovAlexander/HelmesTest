@@ -30,14 +30,16 @@ public class AddressBookService {
             var lineNumber = 0;
             String line;
             while (Objects.nonNull(line = reader.readLine())) {
-                var person = CsvParser.parseLine(line, lineNumber++);
-                countMalePersons(person);
-                findOldestPerson(person);
-                findBillAndPaul(person);
+                try {
+                    var person = CsvParser.parseLine(line, lineNumber++);
+                    countMalePersons(person);
+                    findOldestPerson(person);
+                    findBillAndPaul(person);
+                } catch (CsvException e) {
+                    errorList.add(e.getMessage());
+                }
             }
             calculateBillPaulAgeDifference();
-        } catch (CsvException e) {
-            errorList.add(e.getMessage());
         }
         System.out.println(getResultMessage());
         errorList.forEach(System.out::println);
